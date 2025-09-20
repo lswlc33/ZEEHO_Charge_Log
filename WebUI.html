@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日志可视化</title>
+    <script src="https://cdn.staticfile.net/echarts/4.3.0/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ffffff;
+            margin-bottom: 40px;
+            font-weight: 300;
+            font-size: 2.8rem;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .upload-section {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 25px;
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .upload-label {
+            display: inline-block;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 17px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .upload-label:hover {
+            background: linear-gradient(135deg, #60a5fa 0%, #818cf8 100%);
+            box-shadow: 0 6px 25px rgba(59, 130, 246, 0.5);
+            transform: translateY(-2px);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-name {
+            margin-top: 15px;
+            color: #94a3b8;
+            font-size: 15px;
+        }
+
+        .chart-container {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chart-title {
+            font-size: 22px;
+            font-weight: 500;
+            margin-bottom: 25px;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #94a3b8;
+            padding: 50px;
+            font-size: 18px;
+            font-weight: 300;
+        }
+
+        .echart {
+            width: 100%;
+            height: 300px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>设备充电状态监控</h1>
+        <div class="upload-section">
+            <label for="fileInput" class="upload-label">选择TXT文件</label>
+            <input type="file" id="fileInput" accept=".txt" onchange="handleFileUpload(event)">
+            <div class="file-name" id="fileName">未选择文件</div>
+        </div>
+        <div id="chartsContainer" style="display: none;">
+            <div class="chart-container">
+                <div class="chart-title">近2小时电量变化</div>
+                <div id="chart2h" class="echart"></div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">近12小时电量变化</div>
+                <div id="chart12h" class="echart"></div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">近2天电量变化</div>
+                <div id="chart2d" class="echart"></div>
+            </div>
+        </div>
+        <div id="noDataMessage" class="no-data">请上传TXT文件以显示数据</div>
+    </div>
+
+    <script>
+        let chartData = [];
+
+        function parseTxtContent(content) {
+            const lines = content.trim().split('\n');
+            const data = [];
+            lines.forEach(line => {
+                const match = line.match(/(\d{4}-\d{2}-\d{2}), (\d{2}:\d{2}:\d{2}),\s*(处于充电|不在充电),\s*(\d+)%/);
+                if (match) {
+                    const timeStr = match[1] + ' ' + match[2];
+                    const level = parseInt(match[4]);
+                    data.push({ time: timeStr, level: level, status: match[3] });
+                }
+            });
+            return data.sort((a, b) => new Date(a.time) - new Date(b.time));
+        }
+
+        function filterDataByHours(data, hours) {
+            if (data.length === 0) return [];
+            const latest = new Date(data[data.length - 1].time);
+            const cutoff = new Date(latest.getTime() - hours * 60 * 60 * 1000);
+            return data.filter(item => new Date(item.time) >= cutoff);
+        }
+
+        function createColoredLine(containerId, data) {
+            const dom = document.getElementById(containerId);
+            const myChart = echarts.init(dom);
+
+            const series = [];
+            for (let i = 0; i < data.length - 1; i++) {
+                series.push({
+                    type: 'line',
+                    data: [[data[i].time, data[i].level], [data[i + 1].time, data[i + 1].level]],
+                    lineStyle: {
+                        color: data[i].status === '处于充电'
+                            ? new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: '#00ff6a' }, { offset: 1, color: '#22ff88' }])
+                            : new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: '#00e4ff' }, { offset: 1, color: '#33cfff' }]),
+                        width: 3
+                    },
+                    areaStyle: {
+                        color: data[i].status === '处于充电'
+                            ? 'rgba(0,255,106,0.1)'
+                            : 'rgba(0,228,255,0.1)'
+                    },
+                    smooth: true,
+                    showSymbol: true,
+                    symbol: 'circle',
+                    symbolSize: 6,
+                    itemStyle: {
+                        color: data[i].status === '处于充电' ? '#00ff6a' : '#00e4ff',
+                        borderColor: '#fff',
+                        borderWidth: 1
+                    }
+                });
+            }
+
+            const option = {
+
+                xAxis: {
+                    type: 'category',
+                    data: data.map(d => d.time),
+                    axisLabel: {
+                        color: 'rgba(255,255,255,0.7)',
+                        rotate: 45,
+                        formatter: function (value) {
+                            // 只显示 HH:MM
+                            const timePart = value.split(' ')[1]; // "YYYY-MM-DD HH:MM:SS" -> "HH:MM:SS"
+                            return timePart ? timePart.substring(0, 5) : value; // 截取 HH:MM
+                        }
+                    },
+                    axisLine: { lineStyle: { color: 'rgba(255,255,255,0.3)' } },
+                    splitLine: { show: false }
+                },
+                yAxis: {
+                    type: 'value', min: 0, max: 100,
+                    axisLabel: { color: 'rgba(255,255,255,0.7)', formatter: '{value}%' },
+                    splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } }
+                },
+                grid: { left: '10%', right: '5%', bottom: '15%', containLabel: true },
+                series: series
+            };
+
+            myChart.setOption(option);
+            window.addEventListener('resize', () => myChart.resize());
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('fileName').textContent = file.name;
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    chartData = parseTxtContent(e.target.result);
+                    if (chartData.length > 0) {
+                        document.getElementById('noDataMessage').style.display = 'none';
+                        document.getElementById('chartsContainer').style.display = 'block';
+                        setTimeout(() => {
+                            createColoredLine('chart2h', filterDataByHours(chartData, 2));
+                            createColoredLine('chart12h', filterDataByHours(chartData, 12));
+                            createColoredLine('chart2d', filterDataByHours(chartData, 48));
+                        }, 100);
+                    } else { alert('未能解析文件中的有效数据，请确保文件格式正确。'); }
+                }
+                reader.readAsText(file);
+            }
+        }
+    </script>
+</body>
+
+</html>
