@@ -139,16 +139,16 @@
         </div>
         <div id="chartsContainer" style="display: none;">
             <div class="chart-container">
-                <div class="chart-title">近2小时电量变化</div>
-                <div id="chart2h" class="echart"></div>
+                <div class="chart-title">近3小时电量变化</div>
+                <div id="chart3h" class="echart"></div>
             </div>
             <div class="chart-container">
-                <div class="chart-title">近12小时电量变化</div>
-                <div id="chart12h" class="echart"></div>
+                <div class="chart-title">近24小时电量变化</div>
+                <div id="chart24h" class="echart"></div>
             </div>
             <div class="chart-container">
-                <div class="chart-title">近2天电量变化</div>
-                <div id="chart2d" class="echart"></div>
+                <div class="chart-title">近15天电量变化</div>
+                <div id="chart15d" class="echart"></div>
             </div>
         </div>
         <div id="noDataMessage" class="no-data">请上传TXT文件以显示数据</div>
@@ -251,9 +251,9 @@
                         document.getElementById('noDataMessage').style.display = 'none';
                         document.getElementById('chartsContainer').style.display = 'block';
                         setTimeout(() => {
-                            createColoredLine('chart2h', filterDataByHours(chartData, 2));
-                            createColoredLine('chart12h', filterDataByHours(chartData, 12));
-                            createColoredLine('chart2d', filterDataByHours(chartData, 48));
+                            createColoredLine('chart3h', filterDataByHours(chartData, 3));
+                            createColoredLine('chart24h', filterDataByHours(chartData, 24));
+                            createColoredLine('chart15d', filterDataByHours(chartData, 360));
                         }, 100);
                     } else { alert('未能解析文件中的有效数据，请确保文件格式正确。'); }
                 }
