@@ -8,11 +8,12 @@
 
 ## 1. 快捷指令
 网址1(记录脚本)：[https://www.icloud.com/shortcuts/ed1102d7e5e3493aa3b358a38295c332](https://www.icloud.com/shortcuts/ed1102d7e5e3493aa3b358a38295c332)  
-网址2(循环脚本)：[https://www.icloud.com/shortcuts/390c71c39db949fd85447465eb2d3f0e](https://www.icloud.com/shortcuts/390c71c39db949fd85447465eb2d3f0e)
+网址2(循环脚本)：[https://www.icloud.com/shortcuts/390c71c39db949fd85447465eb2d3f0e](https://www.icloud.com/shortcuts/390c71c39db949fd85447465eb2d3f0e)  
 用于获取车当前电量，记录到文件，并且做出充电提示  
 使用方式：  
 1. 添加两个快捷指令
-2. 设置自动化，每天一次运行 `循环脚本`  
+2. 设置自动化，每天一次运行 `循环脚本`
+3. 试运行一次，给予权限
 
 
 ## 2. 日志可视化
