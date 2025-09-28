@@ -7,8 +7,8 @@
 - 弥补官方没有的充电通知
 
 ## 1. 快捷指令
-网址1(记录脚本)：[https://www.icloud.com/shortcuts/9407beec36b94d5797a5f10516f3e24e](https://www.icloud.com/shortcuts/9407beec36b94d5797a5f10516f3e24e)  
-网址2(循环脚本)：[https://www.icloud.com/shortcuts/e27cd66c1c1346c3bedc54b071eb687e](https://www.icloud.com/shortcuts/e27cd66c1c1346c3bedc54b071eb687e)  
+网址1(记录脚本)：[https://www.icloud.com/shortcuts/ed1102d7e5e3493aa3b358a38295c332](https://www.icloud.com/shortcuts/ed1102d7e5e3493aa3b358a38295c332)  
+网址2(循环脚本)：[https://www.icloud.com/shortcuts/390c71c39db949fd85447465eb2d3f0e](https://www.icloud.com/shortcuts/390c71c39db949fd85447465eb2d3f0e)
 用于获取车当前电量，记录到文件，并且做出充电提示  
 使用方式：  
 1. 添加两个快捷指令
